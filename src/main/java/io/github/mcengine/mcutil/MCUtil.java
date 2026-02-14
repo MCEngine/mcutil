@@ -2,6 +2,7 @@ package io.github.mcengine.mcutil;
 
 import io.github.mcengine.mcutil.git.IGit;
 import io.github.mcengine.mcutil.github.MCUtilGitHub;
+import io.github.mcengine.mcutil.gitlab.MCUtilGitLab;
 
 import java.io.IOException;
 
@@ -30,6 +31,8 @@ public class MCUtil {
         switch (gitType.toLowerCase()) {
             case "github":
                 return new MCUtilGitHub();
+            case "gitlab":
+                return new MCUtilGitLab();
             default:
                 throw new IllegalArgumentException("Unsupported git provider: " + gitType);
         }
