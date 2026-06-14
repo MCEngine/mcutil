@@ -1,21 +1,18 @@
-plugins {
-    id 'mcutil.logic'
-}
-
 // --- Shared Identity (read once from gradle.properties) ---
 def gitOwner = project.property('git-org-name')
 def gitRepo = project.property('git-org-repository')
 def gitUrl = project.property('project-artifact-url')
 
 /**
- * Shared publishing configuration.
+ * Root aggregator project.
  *
- * Every module (root facade + sub modules) declares its OWN publication
- * (artifactId / POM name) in its build file, but they all reuse the same
- * SCM block, project URL, developers and the GitHubPackages repository
- * defined here in the root build.gradle.
+ * The root ships no Java code or artifact of its own — consumers depend on the
+ * provider modules (mcutil-github / mcutil-gitlab) directly. This file only holds
+ * the shared publishing configuration: every sub module declares its OWN
+ * publication (artifactId / POM name) while reusing the SCM block, project URL,
+ * developers and the GitHubPackages repository defined once here.
  */
-allprojects {
+subprojects {
     plugins.withId('maven-publish') {
         publishing {
             publications.withType(MavenPublication).configureEach {
@@ -47,30 +44,6 @@ allprojects {
                         password = System.getenv("GITHUB_TOKEN")
                     }
                 }
-            }
-        }
-    }
-}
-
-// --- Root Facade Module (artifact: mcutil) ---
-// Aggregates every provider so consumers can depend on a single artifact and
-// still receive core, github and gitlab transitively.
-dependencies {
-    api project(':core')
-    api project(':github')
-    api project(':gitlab')
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = project.property('project-artifact-id')
-
-            from components.java
-
-            pom {
-                name = project.property('project-artifact-name')
-                description = project.property('project-artifact-description')
             }
         }
     }
