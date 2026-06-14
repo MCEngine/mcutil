@@ -24,4 +24,27 @@ public interface IGit {
      * @return {@code true} if a newer version exists remotely
      */
     boolean compareVersion(String currentVersion, String org, String repo, String token) throws IOException;
+
+    /**
+     * Create a new issue in the given repository.
+     *
+     * @param org   organization or owner name
+     * @param repo  repository name
+     * @param token personal access token with write access (required)
+     * @param title issue title
+     * @param body  issue body/description (nullable)
+     * @return the created {@link GitIssue}
+     */
+    GitIssue createIssue(String org, String repo, String token, String title, String body) throws IOException;
+
+    /**
+     * Fetch a single issue by its number/iid.
+     *
+     * @param org     organization or owner name
+     * @param repo    repository name
+     * @param token   personal access token for private repos (nullable for public)
+     * @param issueId issue number (GitHub) or iid (GitLab)
+     * @return the requested {@link GitIssue}
+     */
+    GitIssue getIssue(String org, String repo, String token, long issueId) throws IOException;
 }
