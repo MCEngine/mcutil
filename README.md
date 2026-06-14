@@ -2,10 +2,14 @@
 
 A core library providing shared utilities for various [MCEngine](https://github.com/MCEngine) projects.
 
-Today MCUtil focuses on **version checking**: given a project's current version, it
-asks a git host (GitHub or GitLab) for the latest released tag and tells you whether
-a newer version exists. This is handy for Minecraft plugins (or any app) that want to
-notify users about available updates.
+MCUtil wraps common git-host operations behind a single `IGit` interface:
+
+- **Version checking** — given a project's current version, ask a git host (GitHub or
+  GitLab) for the latest released tag and find out whether a newer version exists.
+- **Issues** — create an issue and fetch an existing one.
+
+This is handy for Minecraft plugins (or any app) that want to notify users about
+available updates or open issues programmatically.
 
 ## Modules
 
@@ -15,9 +19,9 @@ and publishing configuration from the root.
 
 | Module          | Artifact         | Description                                                                 |
 |-----------------|------------------|-----------------------------------------------------------------------------|
-| `core`          | `mcutil-core`    | Shared `IGit` contract plus git tag parsing / version comparison helpers.   |
-| `github`        | `mcutil-github`  | GitHub provider — reads the latest tag via the GitHub REST API.             |
-| `gitlab`        | `mcutil-gitlab`  | GitLab provider — reads the latest tag via the GitLab REST API.             |
+| `core`          | `mcutil-core`    | Shared `IGit` contract, `GitIssue` model and tag/JSON helpers.              |
+| `github`        | `mcutil-github`  | GitHub provider — tags & issues via the GitHub REST API.                    |
+| `gitlab`        | `mcutil-gitlab`  | GitLab provider — tags & issues via the GitLab REST API.                    |
 
 Both providers depend on `core` and implement the same `IGit` interface, so they are
 interchangeable — use `MCUtilGitHub` or `MCUtilGitLab` directly. The root project is a
@@ -71,6 +75,8 @@ dependencies {
 Use the provider class directly — `MCUtilGitHub` or `MCUtilGitLab`. Both implement the
 same `IGit` interface, so they are interchangeable.
 
+### Version checking
+
 ```java
 import io.github.mcengine.mcutil.git.IGit;
 import io.github.mcengine.mcutil.github.MCUtilGitHub;
@@ -103,6 +109,38 @@ import io.github.mcengine.mcutil.gitlab.MCUtilGitLab;
 IGit git = new MCUtilGitLab();
 boolean updateAvailable = git.compareVersion("2026.0.3-2", "my-group", "my-repo", null);
 ```
+
+### Issues
+
+Create and fetch issues with the same provider. Both calls return a `GitIssue` record
+— `number()` (GitHub `number` / GitLab `iid`), `title()`, `body()`, `url()` and
+`state()`. Creating an issue requires a `token` with write access.
+
+```java
+import io.github.mcengine.mcutil.git.GitIssue;
+import io.github.mcengine.mcutil.git.IGit;
+import io.github.mcengine.mcutil.github.MCUtilGitHub;
+
+IGit git = new MCUtilGitHub();
+String token = System.getenv("GITHUB_TOKEN");
+
+// Create an issue.
+GitIssue created = git.createIssue(
+        "MCEngine",                 // organization / owner
+        "mcutil",                   // repository name
+        token,                      // token with write access (required)
+        "Something is broken",      // title
+        "Steps to reproduce..."     // body / description
+);
+System.out.println("Opened #" + created.number() + " -> " + created.url());
+
+// Fetch an existing issue by its number (GitHub) / iid (GitLab).
+GitIssue issue = git.getIssue("MCEngine", "mcutil", token, created.number());
+System.out.println(issue.title() + " [" + issue.state() + "]");
+```
+
+`MCUtilGitLab` exposes the identical API; pass the GitLab group/project and a token
+sent as `PRIVATE-TOKEN`.
 
 ### Authentication
 
@@ -151,7 +189,7 @@ mcutil/
 ├── settings.gradle         # includes the core / github / gitlab sub modules
 ├── gradle.properties       # shared project identity & version
 ├── buildSrc/               # 'mcutil.logic' convention plugin + VersionCalculator
-├── core/                   # io.github.mcengine.mcutil.git (IGit, GitTagUtil)
+├── core/                   # io.github.mcengine.mcutil.git (IGit, GitIssue, GitTagUtil, GitJson)
 ├── github/                 # io.github.mcengine.mcutil.github (MCUtilGitHub)
 └── gitlab/                 # io.github.mcengine.mcutil.gitlab (MCUtilGitLab)
 ```
