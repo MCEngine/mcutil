@@ -137,7 +137,8 @@ leading `v`/`V` is ignored, so `v2026.1.0` and `2026.1.0` are treated the same.
 ./gradlew :github:build
 
 # Publish all artifacts to GitHub Packages
-#   requires USER_GITHUB_NAME and USER_GITHUB_TOKEN environment variables
+#   requires GITHUB_ACTOR and GITHUB_TOKEN environment variables
+#   (provided automatically inside GitHub Actions)
 ./gradlew publish
 ```
 
