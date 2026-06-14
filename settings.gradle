@@ -1,1 +1,6 @@
 rootProject.name = "mcutil"
+
+// --- Sub Modules ---
+include 'core'
+include 'github'
+include 'gitlab'

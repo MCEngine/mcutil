@@ -1,0 +1,21 @@
+plugins {
+    id 'mcutil.logic'
+}
+
+// --- Core Module (artifact: mcutil-core) ---
+// Shared git tag parsing / version comparison helpers and the IGit contract
+// that every provider implements.
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'mcutil-core'
+
+            from components.java
+
+            pom {
+                name = 'MCUtil Core'
+                description = 'Shared git tag parsing and version comparison utilities for MCUtil.'
+            }
+        }
+    }
+}

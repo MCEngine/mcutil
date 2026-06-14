@@ -1,16 +1,26 @@
 import io.github.mcengine.mcutil.gradle.VersionCalculator
 
 /**
- * MCUtil Configuration
+ * MCUtil Shared Build Logic
+ *
+ * Applied to the root project and every sub module so they all share the same
+ * Java toolchain, dynamic versioning and dependency repositories. Publishing
+ * identity (artifactId / POM name) is declared per module, while the shared
+ * SCM block and publishing repository are wired in the root build.gradle.
  */
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
 }
 
 // --- DYNAMIC VERSIONING LOGIC ---
 version = VersionCalculator.calculate(project)
 group = project.property('project-group')
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
 repositories {
     mavenCentral()
@@ -29,50 +39,4 @@ repositories {
 dependencies {
     // Spigot API
     compileOnly 'org.spigotmc:spigot-api:1.21.11-R0.2-SNAPSHOT'
-}
-
-def gitOwner = project.property('git-org-name')
-def gitRepo = project.property('git-org-repository')
-def gitUrl = project.property('project-artifact-url')
-
-publishing {
-    publications {
-        create('mavenJava', MavenPublication) {
-            artifactId = project.property('project-artifact-id')
-            
-            // Standard JAR publication
-            from components.java 
-
-            pom {
-                name = project.property('project-artifact-name')
-                description = project.property('project-artifact-description')
-                url = gitUrl
-
-                developers {
-                    developer {
-                        id = 'jetsadawijit'
-                        url = 'https://jetsadawijit.github.io'
-                    }
-                }
-
-                scm {
-                    connection = "scm:git:git://github.com/${gitOwner}/${gitRepo}.git"
-                    developerConnection = "scm:git:ssh://github.com/${gitOwner}/${gitRepo}.git"
-                    url = gitUrl
-                }
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/${gitOwner}/${gitRepo}")
-
-            credentials {
-                username = System.getenv("USER_GITHUB_NAME")
-                password = System.getenv("USER_GITHUB_TOKEN")
-            }
-        }
-    }
 }

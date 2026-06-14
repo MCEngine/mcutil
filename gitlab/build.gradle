@@ -1,0 +1,23 @@
+plugins {
+    id 'mcutil.logic'
+}
+
+// --- GitLab Module (artifact: mcutil-gitlab) ---
+dependencies {
+    api project(':core')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'mcutil-gitlab'
+
+            from components.java
+
+            pom {
+                name = 'MCUtil GitLab'
+                description = 'GitLab provider for MCUtil: fetch the latest tag and compare versions via the GitLab API.'
+            }
+        }
+    }
+}

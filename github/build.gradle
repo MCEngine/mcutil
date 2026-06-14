@@ -1,0 +1,23 @@
+plugins {
+    id 'mcutil.logic'
+}
+
+// --- GitHub Module (artifact: mcutil-github) ---
+dependencies {
+    api project(':core')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'mcutil-github'
+
+            from components.java
+
+            pom {
+                name = 'MCUtil GitHub'
+                description = 'GitHub provider for MCUtil: fetch the latest tag and compare versions via the GitHub API.'
+            }
+        }
+    }
+}
