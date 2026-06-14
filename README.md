@@ -4,8 +4,8 @@ A core library providing shared utilities for various [MCEngine](https://github.
 
 MCUtil wraps common git-host operations behind a single `IGit` interface:
 
-- **Version checking** — given a project's current version, ask a git host (GitHub or
-  GitLab) for the latest released tag and find out whether a newer version exists.
+- **Latest tag** — ask a git host (GitHub or GitLab) for the latest released tag,
+  e.g. to check whether a newer version of your project exists.
 - **Issues** — create an issue and fetch an existing one.
 
 This is handy for Minecraft plugins (or any app) that want to notify users about
@@ -75,7 +75,7 @@ dependencies {
 Use the provider class directly — `MCUtilGitHub` or `MCUtilGitLab`. Both implement the
 same `IGit` interface, so they are interchangeable.
 
-### Version checking
+### Latest tag
 
 ```java
 import io.github.mcengine.mcutil.git.IGit;
@@ -84,20 +84,21 @@ import io.github.mcengine.mcutil.github.MCUtilGitHub;
 IGit git = new MCUtilGitHub();
 
 // Fetch the latest tag.
-String latest = git.getLatestTag("MCEngine", "mcutil", null);
-System.out.println("Latest tag: " + latest);
-
-// Returns true if a newer tag than your current version exists remotely.
-boolean updateAvailable = git.compareVersion(
-        "2026.0.3-2",    // your current version
+String latest = git.getLatestTag(
         "MCEngine",      // organization / owner
         "mcutil",        // repository name
         null             // personal access token (null for public repos)
 );
+System.out.println("Latest tag: " + latest);
+```
 
-if (updateAvailable) {
-    System.out.println("A new version is available!");
-}
+To compare it against your own version, use the helpers in `GitTagUtil`
+(`normalizeTag`, `isNewer`):
+
+```java
+import io.github.mcengine.mcutil.git.GitTagUtil;
+
+boolean updateAvailable = GitTagUtil.isNewer("2026.0.3-2", GitTagUtil.normalizeTag(latest));
 ```
 
 GitLab works the same way via `io.github.mcengine.mcutil.gitlab.MCUtilGitLab`:
@@ -107,7 +108,7 @@ import io.github.mcengine.mcutil.git.IGit;
 import io.github.mcengine.mcutil.gitlab.MCUtilGitLab;
 
 IGit git = new MCUtilGitLab();
-boolean updateAvailable = git.compareVersion("2026.0.3-2", "my-group", "my-repo", null);
+String latest = git.getLatestTag("my-group", "my-repo", null);
 ```
 
 ### Issues
@@ -190,8 +191,8 @@ mcutil/
 ├── gradle.properties       # shared project identity & version
 ├── buildSrc/               # 'mcutil.logic' convention plugin + VersionCalculator
 ├── core/                   # io.github.mcengine.mcutil.git (IGit, GitIssue, GitTagUtil, GitJson)
-├── github/                 # io.github.mcengine.mcutil.github (MCUtilGitHub)
-└── gitlab/                 # io.github.mcengine.mcutil.gitlab (MCUtilGitLab)
+├── github/                 # MCUtilGitHub (central) + GetLatestTag / CreateIssue / GetIssue
+└── gitlab/                 # MCUtilGitLab (central) + GetLatestTag / CreateIssue / GetIssue
 ```
 
 ## License
